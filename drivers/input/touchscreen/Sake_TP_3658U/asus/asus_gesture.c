@@ -16,7 +16,7 @@ report key code
 #define KEY_GESTURE_REWIND                      KEY_REWIND
 #define KEY_GESTURE_FORWARD                     KEY_FORWARD
 //Zenmotion
-#define KEY_GESTURE_UP                          KEY_UP
+#define KEY_GESTURE_UP                          KEY_WAKEUP
 #define KEY_GESTURE_E                           KEY_E
 #define KEY_GESTURE_M                           KEY_M
 #define KEY_GESTURE_W                           KEY_W
