@@ -1178,33 +1178,166 @@ static ssize_t fts_log_level_store(struct device *dev,
 static ssize_t asus_ex_proc_fpxy_read(struct file *file, char __user *buf,
 				      size_t count, loff_t *ppos)
 {
+	struct fts_ts_data *ts_data = fts_data;
 	char str[32] = {};
 	int len;
 
-	len = snprintf(str, sizeof(str), "%u,%u\n", fts_data->fp_x,
-		       fts_data->fp_y);
+	len = snprintf(str, sizeof(str), "%u,%u\n", ts_data->fp_x,
+		       ts_data->fp_y);
 
 	return simple_read_from_buffer(buf, count, ppos, str, len);
 }
 
-static ssize_t fts_high_report_rate_show(struct device *dev,
-					 struct device_attribute *attr,
-					 char *buf)
+static ssize_t asus_gesture_proc_dclick_read(struct file *file,
+					     char __user *buf, size_t count,
+					     loff_t *ppos)
 {
-	return snprintf(buf, PAGE_SIZE, "%u\n", fts_data->high_report_rate);
+	struct fts_ts_data *ts_data = fts_data;
+	char str[3];
+	int len;
+
+	len = snprintf(str, sizeof(str), "%c\n",
+		       ts_data->dclick_mode ? '1' : '0');
+
+	return simple_read_from_buffer(buf, count, ppos, str, len);
 }
 
-static ssize_t fts_high_report_rate_store(struct device *dev,
-					  struct device_attribute *attr,
-					  const char *buf, size_t count)
+static ssize_t asus_gesture_proc_dclick_write(struct file *filp,
+					      const char *buf, size_t len,
+					      loff_t *off)
 {
-	bool enabled = buf[0] != '0';
+	struct fts_ts_data *ts_data = fts_data;
+	bool dclick_mode;
+	char str[1];
 
-	fts_write_reg(FTS_REG_REPORT_RATE,
-		      enabled ? FTS_REPORT_RATE_240 : FTS_REPORT_RATE_120);
-	fts_data->high_report_rate = enabled;
+	if (len > sizeof(str))
+		len = sizeof(str);
 
-	return count;
+	if (copy_from_user(str, buf, len))
+		return -EFAULT;
+
+	dclick_mode = str[0] != '0';
+	if (ts_data->dclick_mode == dclick_mode)
+		return len;
+
+	ts_data->dclick_mode = dclick_mode;
+	mod_delayed_work(ts_data->ts_workqueue, &ts_data->gesture_work,
+		msecs_to_jiffies(100));
+
+	return len;
+}
+
+static ssize_t asus_gesture_proc_swipeup_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+{
+	struct fts_ts_data *ts_data = fts_data;
+	char str[3];
+	int len;
+
+	len = snprintf(str, sizeof(str), "%c\n",
+		       ts_data->swipeup_mode ? '1' : '0');
+
+	return simple_read_from_buffer(buf, count, ppos, str, len);
+}
+
+static ssize_t asus_gesture_proc_swipeup_write(struct file *filp, const char *buf, size_t len, loff_t *off)
+{
+	struct fts_ts_data *ts_data = fts_data;
+	bool swipeup_mode;
+	char str[1];
+
+	if (len > sizeof(str))
+		len = sizeof(str);
+
+	if (copy_from_user(str, buf, len))
+		return -EFAULT;
+
+	swipeup_mode = str[0] != '0';
+	if (ts_data->swipeup_mode == swipeup_mode)
+		return len;
+
+	ts_data->swipeup_mode = swipeup_mode;
+	mod_delayed_work(ts_data->ts_workqueue, &ts_data->gesture_work,
+		msecs_to_jiffies(100));
+
+	return len;
+}
+
+static ssize_t asus_gesture_proc_type_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+{
+	ssize_t ret = 0;
+	char *buff = NULL;
+	int offset = 0;
+	FTS_FUNC_ENTER();
+	buff = kzalloc(100, GFP_KERNEL);
+	if (!buff)
+		return -ENOMEM;
+
+	offset += sprintf(buff, "%#x \n", fts_data->gesture_type);
+
+	ret = simple_read_from_buffer(buf, count, ppos, buff, offset);
+	kfree(buff);
+
+	return ret;
+}
+
+static ssize_t asus_gesture_proc_type_write(struct file *filp, const char *buff, size_t len, loff_t *off)
+{
+	struct fts_ts_data *ts_data = fts_data;
+	int tmp = 0;
+	u8 gesture_tmp = 0;
+	char gesture_buf[16];
+	char gesture_type_buf[16] = {'0'};
+	char messages[16];
+	memset(messages, 0, sizeof(messages));
+	FTS_FUNC_ENTER();
+
+	if (len > 16)
+		len = 16;
+
+	if (copy_from_user(messages, buff, len))
+		return -EFAULT;
+
+	memset(gesture_buf, 0, sizeof(gesture_buf));
+	sprintf(gesture_buf, "%s", messages);
+	gesture_buf[len] = '\0';
+	FTS_INFO("fts_gesture_store %s ! length %d", gesture_buf, len);
+
+	memset(gesture_type_buf, 0, sizeof(gesture_type_buf));
+	gesture_type_buf[8] = '\0';
+	for (tmp = 0; tmp < len; tmp++) {
+		gesture_type_buf[tmp] = gesture_buf[len-tmp-1];
+	}
+	FTS_INFO("fts_gesture_store %s ! length %d", gesture_type_buf, len);
+	if (gesture_type_buf[0] == '1') {
+		fts_data->gesture_mode_enable = ENABLE;
+		FTS_INFO("gesture_mode enable !");
+	} else
+		fts_data->gesture_mode_enable = DISABLE;
+
+	if (gesture_type_buf[7] == '1') {
+		fts_data->music_control = ENABLE;
+		printk("[Focal][Touch] music_control enable ! \n");
+	} else
+		fts_data->music_control = DISABLE;
+
+	if (fts_data->gesture_mode_enable == ENABLE) {
+		for (tmp = 0; tmp < 8; tmp++) {
+			if (gesture_type_buf[tmp] == '1') {
+				gesture_tmp |= (1 << tmp);
+			}
+		}
+		fts_data->gesture_type = gesture_tmp;
+		FTS_INFO("gesture_mode_enable type = %#x !", fts_data->gesture_type);
+	} else {
+		fts_data->gesture_mode_enable = DISABLE;
+		fts_data->music_control = DISABLE;
+		fts_data->gesture_type = 0;
+		FTS_INFO("gesture mode is disabled.");
+	}
+	mod_delayed_work(ts_data->ts_workqueue, &ts_data->gesture_work,
+		msecs_to_jiffies(100));
+
+	return len;
 }
 #endif
 
@@ -1246,11 +1379,6 @@ static DEVICE_ATTR(fts_touch_point, S_IRUGO | S_IWUSR, fts_tpbuf_show,
 static DEVICE_ATTR(fts_log_level, S_IRUGO | S_IWUSR, fts_log_level_show,
 		   fts_log_level_store);
 
-#if defined ASUS_SAKE_PROJECT
-static DEVICE_ATTR(fts_high_report_rate, S_IRUGO | S_IWUSR,
-		   fts_high_report_rate_show, fts_high_report_rate_store);
-#endif
-
 /* add your attr in here*/
 static struct attribute *fts_attributes[] = {
 	&dev_attr_fts_fw_version.attr,	  &dev_attr_fts_rw_reg.attr,
@@ -1258,11 +1386,7 @@ static struct attribute *fts_attributes[] = {
 	&dev_attr_fts_force_upgrade.attr, &dev_attr_fts_driver_info.attr,
 	&dev_attr_fts_hw_reset.attr,	  &dev_attr_fts_irq.attr,
 	&dev_attr_fts_boot_mode.attr,	  &dev_attr_fts_touch_point.attr,
-	&dev_attr_fts_log_level.attr,
-#if defined ASUS_SAKE_PROJECT
-	&dev_attr_fts_high_report_rate.attr,
-#endif
-	NULL,
+	&dev_attr_fts_log_level.attr,	  NULL
 };
 
 static struct attribute_group fts_attribute_group = { .attrs = fts_attributes };
@@ -1270,6 +1394,21 @@ static struct attribute_group fts_attribute_group = { .attrs = fts_attributes };
 #if defined ASUS_SAKE_PROJECT
 static struct file_operations asus_ex_proc_fpxy_ops = {
 	.read = asus_ex_proc_fpxy_read,
+};
+
+static struct file_operations asus_gesture_proc_dclick_ops = {
+	.write = asus_gesture_proc_dclick_write,
+	.read = asus_gesture_proc_dclick_read,
+};
+
+static struct file_operations asus_gesture_proc_swipeup_ops = {
+	.write = asus_gesture_proc_swipeup_write,
+	.read  = asus_gesture_proc_swipeup_read,
+};
+
+static struct file_operations asus_gesture_proc_type_ops = {
+	.write = asus_gesture_proc_type_write,
+	.read  = asus_gesture_proc_type_read,
 };
 #endif
 
@@ -1288,6 +1427,9 @@ int fts_create_sysfs(struct fts_ts_data *ts_data)
 
 #if defined ASUS_SAKE_PROJECT
 	proc_create("driver/fp_xy", 0777, NULL, &asus_ex_proc_fpxy_ops);
+	proc_create("driver/dclick", 0777, NULL, &asus_gesture_proc_dclick_ops);
+	proc_create("driver/swipeup", 0777, NULL, &asus_gesture_proc_swipeup_ops);
+	proc_create("driver/gesture_type", 0777, NULL, &asus_gesture_proc_type_ops);
 #endif
 
 	return ret;
@@ -1296,10 +1438,5 @@ int fts_create_sysfs(struct fts_ts_data *ts_data)
 int fts_remove_sysfs(struct fts_ts_data *ts_data)
 {
 	sysfs_remove_group(&ts_data->dev->kobj, &fts_attribute_group);
-
-#if defined ASUS_SAKE_PROJECT
-	remove_proc_entry("driver/fp_xy", NULL);
-#endif
-
 	return 0;
 }

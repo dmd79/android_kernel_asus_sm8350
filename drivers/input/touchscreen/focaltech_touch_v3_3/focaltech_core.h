@@ -121,24 +121,6 @@
 #define FTS_HIGH_REPORT 0
 #define FTS_SIZE_DEFAULT 15
 
-#if defined ASUS_SAKE_PROJECT
-enum gesture_type {
-	GESTURE_TYPE_UP,
-	GESTURE_TYPE_DOUBLECLICK,
-	GESTURE_TYPE_PAUSE,
-	GESTURE_TYPE_FOD,
-	GESTURE_TYPE_W,
-	GESTURE_TYPE_M,
-	GESTURE_TYPE_E,
-	GESTURE_TYPE_S,
-	GESTURE_TYPE_REWIND,
-	GESTURE_TYPE_FORWARD,
-	GESTURE_TYPE_V,
-	GESTURE_TYPE_Z,
-	GESTURE_TYPE_MAX,
-};
-#endif
-
 /*****************************************************************************
 * Private enumerations, structures and unions using typedef
 *****************************************************************************/
@@ -201,7 +183,7 @@ struct fts_ts_data {
 	struct delayed_work esdcheck_work;
 	struct delayed_work prc_work;
 	struct work_struct resume_work;
-	struct delayed_work suspend_work;
+	struct work_struct suspend_work;
 	struct ftxxxx_proc proc;
 	spinlock_t irq_lock;
 	struct mutex report_mutex;
@@ -249,14 +231,17 @@ struct fts_ts_data {
 	unsigned int fp_x;
 	unsigned int fp_y;
 	struct delayed_work gesture_work;
-	bool enabled_gestures[GESTURE_TYPE_MAX];
 	u8 gesture_data[5];
+	bool dclick_mode;
+	bool fod_mode;
 	bool fod_pressed;
-	bool double_click_pressed;
 	unsigned int fod_last_press_area;
 	unsigned int fod_last_press_id;
 	unsigned int fod_position[4];
-	bool high_report_rate;
+	unsigned int swipeup_mode;
+	unsigned int gesture_mode_enable;
+	unsigned int music_control;
+	u8 gesture_type;
 #endif
 };
 
@@ -288,8 +273,7 @@ void fts_gesture_recovery(struct fts_ts_data *ts_data);
 int fts_gesture_readdata(struct fts_ts_data *ts_data, u8 *data);
 int fts_gesture_suspend(struct fts_ts_data *ts_data);
 int fts_gesture_resume(struct fts_ts_data *ts_data);
-void fts_gesture_set(struct fts_ts_data *ts_data, enum gesture_type type,
-		     bool enabled);
+void fts_gesture_reconfigure(struct fts_ts_data *ts_data);
 
 /* Apk and functions */
 int fts_create_apk_debug_channel(struct fts_ts_data *);

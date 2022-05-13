@@ -37,59 +37,50 @@
 /******************************************************************************
 * Private constant and macro definitions using #define
 *****************************************************************************/
+#define KEY_GESTURE_U KEY_U
+#define KEY_GESTURE_UP KEY_WAKEUP
+#define KEY_GESTURE_DOWN KEY_DOWN
+#define KEY_GESTURE_LEFT KEY_LEFT
+#define KEY_GESTURE_RIGHT KEY_RIGHT
+#define KEY_GESTURE_O KEY_O
+#define KEY_GESTURE_E KEY_E
+#define KEY_GESTURE_F KEY_F
+#define KEY_GESTURE_M KEY_M
+#define KEY_GESTURE_W KEY_W
+#define KEY_GESTURE_L KEY_L
+#define KEY_GESTURE_S KEY_S
+#define KEY_GESTURE_V KEY_V
+#define KEY_GESTURE_C KEY_C
+#define KEY_GESTURE_Z KEY_Z
+#define KEY_GESTURE_PAUSE KEY_PAUSE
+#define KEY_GESTURE_REWIND KEY_REWIND
+#define KEY_GESTURE_FORWARD KEY_FORWARD
+
+#define GESTURE_LEFT 0x20
+#define GESTURE_RIGHT 0x21
 #define GESTURE_UP 0x22
+#define GESTURE_DOWN 0x23
 #define GESTURE_DOUBLECLICK 0x24
 #define GESTURE_W 0x31
 #define GESTURE_M 0x32
 #define GESTURE_E 0x33
 #define GESTURE_S 0x46
 #define GESTURE_V 0x54
+#define GESTURE_C 0x34
+#define MUSIC_PAUSE 0x26
+#define MUSIC_REWIND 0x51
+#define MUSIC_FORWARD 0x52
 
 #if defined ASUS_SAKE_PROJECT
-#define KEY_LAST_USED BTN_TRIGGER_HAPPY40
-#define KEY_GESTURE_UP (KEY_LAST_USED + 1)
-#define KEY_GESTURE_E (KEY_LAST_USED + 2)
-#define KEY_GESTURE_M (KEY_LAST_USED + 3)
-#define KEY_GESTURE_W (KEY_LAST_USED + 4)
-#define KEY_GESTURE_S (KEY_LAST_USED + 5)
-#define KEY_GESTURE_V (KEY_LAST_USED + 6)
-#define KEY_GESTURE_Z (KEY_LAST_USED + 7)
-
-#define KEY_GESTURE_PAUSE (KEY_LAST_USED + 8)
-#define KEY_GESTURE_REWIND (KEY_LAST_USED + 9)
-#define KEY_GESTURE_FORWARD (KEY_LAST_USED + 10)
-
-#define GESTURE_MUSIC_PAUSE 0x26
-#define GESTURE_MUSIC_REWIND 0x51
-#define GESTURE_MUSIC_FORWARD 0x52
+#define GESTURE_F 0x28
+#define GESTURE_L 0x27
+#define GESTURE_O 0x2A
+#define GESTURE_U 0x29
 #define GESTURE_Z 0x65
-
-#define GESTURE_FOD_PRESS 0x28
-#define GESTURE_FOD_PARTIAL_PRESS 0x2A
-#define GESTURE_FOD_UNPRESS 0x29
 #else
-#define KEY_GESTURE_UP KEY_UP
-#define KEY_GESTURE_E KEY_E
-#define KEY_GESTURE_M KEY_M
-#define KEY_GESTURE_W KEY_W
-#define KEY_GESTURE_S KEY_S
-#define KEY_GESTURE_V KEY_V
-#define KEY_GESTURE_Z KEY_Z
-
-#define KEY_GESTURE_LEFT KEY_LEFT
-#define KEY_GESTURE_RIGHT KEY_RIGHT
-#define KEY_GESTURE_DOWN KEY_DOWN
-#define KEY_GESTURE_L KEY_L
-#define KEY_GESTURE_O KEY_O
-#define KEY_GESTURE_C KEY_C
-
-#define GESTURE_LEFT 0x20
-#define GESTURE_RIGHT 0x21
-#define GESTURE_DOWN 0x23
 #define GESTURE_L 0x44
 #define GESTURE_O 0x30
 #define GESTURE_Z 0x41
-#define GESTURE_C 0x34
 #endif
 
 /*****************************************************************************
@@ -127,49 +118,26 @@ static struct fts_gesture_st fts_gesture_data;
 * Static function prototypes
 *****************************************************************************/
 #if defined ASUS_SAKE_PROJECT
-struct gesture_type_reg {
-	unsigned int index;
-	unsigned int nr;
-};
+#define FTS_REG_D1_DCLICK_BIT BIT(4)
+#define FTS_REG_D1_SWIPE_BIT BIT(2)
+#define FTS_REG_D1_FOD_BIT BIT(7)
 
-static const char *gestures_names[] = {
-	[GESTURE_TYPE_UP] = "up",
-	[GESTURE_TYPE_DOUBLECLICK] = "double_click",
-	[GESTURE_TYPE_PAUSE] = "pause",
-	[GESTURE_TYPE_FOD] = "fod",
-	[GESTURE_TYPE_W] = "w",
-	[GESTURE_TYPE_M] = "m",
-	[GESTURE_TYPE_E] = "e",
-	[GESTURE_TYPE_S] = "s",
-	[GESTURE_TYPE_REWIND] = "rewind",
-	[GESTURE_TYPE_FORWARD] = "forward",
-	[GESTURE_TYPE_V] = "v",
-	[GESTURE_TYPE_Z] = "z",
-};
+/*Music*/
+#define FTS_REG_D1_PAUSE_BIT BIT(6)
+#define FTS_REG_D6_REWIND_BIT BIT(1)
+#define FTS_REG_D6_FORWARD_BIT BIT(2)
 
-static const struct gesture_type_reg gesture_types_reg[] = {
-	[GESTURE_TYPE_UP] = { 0, 2 },
-	[GESTURE_TYPE_DOUBLECLICK] = { 0, 4 },
-	[GESTURE_TYPE_PAUSE] = { 0, 6 },
-	[GESTURE_TYPE_FOD] = { 0, 7 },
-
-	[GESTURE_TYPE_W] = { 1, 1 },
-	[GESTURE_TYPE_M] = { 1, 2 },
-	[GESTURE_TYPE_E] = { 1, 3 },
-
-	[GESTURE_TYPE_S] = { 2, 6 },
-
-	[GESTURE_TYPE_REWIND] = { 3, 1 },
-	[GESTURE_TYPE_FORWARD] = { 3, 2 },
-	[GESTURE_TYPE_V] = { 3, 4 },
-
-	[GESTURE_TYPE_Z] = { 4, 5 },
-};
-
-static const u8 gesture_regs[] = { 0xD1, 0xD2, 0xD5, 0xD6, 0xD7 };
+/*Letters*/
+#define FTS_REG_D2_E_BIT BIT(3)
+#define FTS_REG_D2_M_BIT BIT(2)
+#define FTS_REG_D5_S_BIT BIT(6)
+#define FTS_REG_D6_V_BIT BIT(4)
+#define FTS_REG_D2_W_BIT BIT(1)
+#define FTS_REG_D7_Z_BIT BIT(5)
 
 static void fts_gesture_apply(struct fts_ts_data *ts_data)
 {
+	u8 gesture_regs[] = { 0xD1, 0xD2, 0xD5, 0xD6, 0xD7 };
 	unsigned int i;
 
 	for (i = 0; i < sizeof(ts_data->gesture_data); i++)
@@ -185,17 +153,41 @@ static void fts_gesture_work(struct work_struct *work)
 	bool gesture_mode = false;
 	unsigned int i;
 
-	for (i = 0; i < GESTURE_TYPE_MAX; i++) {
-		const struct gesture_type_reg *reg = &gesture_types_reg[i];
-		u8 mask = BIT(reg->nr);
+	memset(ts_data->gesture_data, 0, sizeof(ts_data->gesture_data));
 
-		if (ts_data->enabled_gestures[i]) {
-			ts_data->gesture_data[reg->index] |= mask;
-			gesture_mode = true;
-		} else {
-			ts_data->gesture_data[reg->index] &= ~mask;
-		}
+	if (ts_data->dclick_mode)
+		ts_data->gesture_data[0] |= FTS_REG_D1_DCLICK_BIT;
+
+	if (ts_data->swipeup_mode)
+		ts_data->gesture_data[0] |= FTS_REG_D1_SWIPE_BIT;
+
+	if (ts_data->fod_mode)
+		ts_data->gesture_data[0] |= FTS_REG_D1_FOD_BIT;
+
+	if (ts_data->music_control == 1) {
+		ts_data->gesture_data[0] |= FTS_REG_D1_PAUSE_BIT;
+		ts_data->gesture_data[3] |= FTS_REG_D6_REWIND_BIT;
+		ts_data->gesture_data[3] |= FTS_REG_D6_FORWARD_BIT;
 	}
+
+	if (ts_data->gesture_mode_enable == 1){
+		if (ts_data->gesture_type & 1 << 1)
+			ts_data->gesture_data[1] |= FTS_REG_D2_W_BIT;
+		if (ts_data->gesture_type & 1 << 2)
+			ts_data->gesture_data[2] |= FTS_REG_D5_S_BIT;
+		if (ts_data->gesture_type & 1 << 3)
+			ts_data->gesture_data[1] |= FTS_REG_D2_E_BIT;
+		if (ts_data->gesture_type & 1 << 4)
+			ts_data->gesture_data[1] |= FTS_REG_D2_M_BIT;
+		if (ts_data->gesture_type & 1 << 5)
+			ts_data->gesture_data[4] |= FTS_REG_D7_Z_BIT;
+		if (ts_data->gesture_type & 1 << 6)
+			ts_data->gesture_data[3] |= FTS_REG_D6_V_BIT;
+	}
+
+	for (i = 0; i < sizeof(ts_data->gesture_data); i++)
+		if (ts_data->gesture_data[i])
+			gesture_mode = true;
 
 	if (suspended)
 		fts_ts_resume(ts_data->dev);
@@ -204,80 +196,42 @@ static void fts_gesture_work(struct work_struct *work)
 		fts_ts_suspend(ts_data->dev);
 }
 
-void fts_gesture_set(struct fts_ts_data *ts_data, enum gesture_type type,
-		     bool enabled)
-{
-	if (ts_data->enabled_gestures[type] == enabled)
-		return;
-
-	ts_data->enabled_gestures[type] = enabled;
-
-	if (!enabled && type == GESTURE_TYPE_DOUBLECLICK)
-		ts_data->double_click_pressed = false;
-
-	mod_delayed_work(ts_data->ts_workqueue, &ts_data->gesture_work,
-			 msecs_to_jiffies(100));
-}
-
-static ssize_t fts_gestures_show(struct device *dev,
+static ssize_t fts_fod_mode_show(struct device *dev,
 				 struct device_attribute *attr, char *buf)
 {
 	struct fts_ts_data *ts_data = fts_data;
-	unsigned int i;
-	int count = 0;
+	int ret;
 
-	for (i = 0; i < GESTURE_TYPE_MAX; i++)
-		count += snprintf(buf + count, PAGE_SIZE, "%s=%u\n",
-				  gestures_names[i],
-				  ts_data->enabled_gestures[i]);
+	mutex_lock(&ts_data->input_dev->mutex);
+	ret = snprintf(buf, PAGE_SIZE, "%c\n", ts_data->fod_mode ? '1' : '0');
+	mutex_unlock(&ts_data->input_dev->mutex);
 
-	return count;
+	return ret;
 }
 
-static ssize_t fts_gestures_store(struct device *dev,
+static ssize_t fts_fod_mode_store(struct device *dev,
 				  struct device_attribute *attr,
 				  const char *buf, size_t count)
 {
-	const char *start = buf;
-	const char *end;
-	const char *eq;
-	unsigned int i;
+	struct fts_ts_data *ts_data = fts_data;
+	bool fod_mode;
 
-	eq = strnchr(start, buf + count - start, '=');
-	if (!eq) {
-		FTS_ERROR("invalid format, failed to find =");
-		return -EINVAL;
-	}
+	fod_mode = buf[0] != '0';
 
-	end = strnchr(eq + 1, buf + count - eq - 1, '\n');
-	if (!end) {
-		FTS_ERROR("invalid format, failed to find newline");
-		return -EINVAL;
-	}
+	mutex_lock(&ts_data->input_dev->mutex);
+	if (ts_data->fod_mode == fod_mode)
+		goto unlock;
 
-	if (eq + 1 == end) {
-		FTS_ERROR("invalid format, nothing after =");
-		return -EINVAL;
-	}
+	ts_data->fod_mode = fod_mode;
+	mutex_unlock(&ts_data->input_dev->mutex);
 
-	for (i = 0; i < GESTURE_TYPE_MAX; i++) {
-		const char *gesture_name = gestures_names[i];
+	mod_delayed_work(ts_data->ts_workqueue, &ts_data->gesture_work,
+		msecs_to_jiffies(100));
 
-		if (!gesture_name) {
-			FTS_ERROR("missing name for gesture %u", i);
-			continue;
-		}
+	return count;
 
-		if (!strncmp(start, gesture_name, eq - start))
-			break;
-	}
-
-	if (i == GESTURE_TYPE_MAX) {
-		FTS_ERROR("unknown gesture name %s", start);
-		return -EINVAL;
-	}
-
-	fts_gesture_set(fts_data, i, eq[1] != '0');
+unlock:
+	mutex_unlock(&ts_data->input_dev->mutex);
 
 	return count;
 }
@@ -285,21 +239,19 @@ static ssize_t fts_gestures_store(struct device *dev,
 static ssize_t fts_fod_pressed_show(struct device *dev,
 				    struct device_attribute *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%u\n", fts_data->fod_pressed);
+	struct fts_ts_data *ts_data = fts_data;
+	int ret;
+
+	mutex_lock(&ts_data->input_dev->mutex);
+	ret = snprintf(buf, PAGE_SIZE, "%u\n", ts_data->fod_pressed);
+	mutex_unlock(&ts_data->input_dev->mutex);
+
+	return ret;
 }
 
-static ssize_t fts_double_click_pressed_show(struct device *dev,
-					     struct device_attribute *attr,
-					     char *buf)
-{
-	return snprintf(buf, PAGE_SIZE, "%u\n", fts_data->double_click_pressed);
-}
-
-static DEVICE_ATTR(fts_gestures, S_IRUGO | S_IWUSR, fts_gestures_show,
-		   fts_gestures_store);
+static DEVICE_ATTR(fts_fod_mode, S_IRUGO | S_IWUSR, fts_fod_mode_show,
+		   fts_fod_mode_store);
 static DEVICE_ATTR(fts_fod_pressed, S_IRUGO, fts_fod_pressed_show, NULL);
-static DEVICE_ATTR(fts_double_click_pressed, S_IRUGO,
-		   fts_double_click_pressed_show, NULL);
 #else
 static ssize_t fts_gesture_show(struct device *dev,
 				struct device_attribute *attr, char *buf)
@@ -389,9 +341,8 @@ static DEVICE_ATTR(fts_gesture_buf, S_IRUGO | S_IWUSR, fts_gesture_buf_show,
 
 static struct attribute *fts_gesture_mode_attrs[] = {
 #if defined ASUS_SAKE_PROJECT
-	&dev_attr_fts_gestures.attr,
+	&dev_attr_fts_fod_mode.attr,
 	&dev_attr_fts_fod_pressed.attr,
-	&dev_attr_fts_double_click_pressed.attr,
 #else
 	&dev_attr_fts_gesture_mode.attr,
 	&dev_attr_fts_gesture_buf.attr,
@@ -417,9 +368,10 @@ static int fts_create_gesture_sysfs(struct device *dev)
 	return 0;
 }
 
-static void fts_gesture_report(struct input_dev *input_dev, int gesture_id)
+static void fts_gesture_report(struct fts_ts_data *ts_data, int gesture_id)
 {
-	int gesture;
+	int gesture = -1;
+	struct input_dev *input_dev = ts_data->input_dev;
 
 	FTS_DEBUG("gesture_id:0x%x", gesture_id);
 	switch (gesture_id) {
@@ -448,13 +400,19 @@ static void fts_gesture_report(struct input_dev *input_dev, int gesture_id)
 		break;
 #endif
 	case GESTURE_W:
-		gesture = KEY_GESTURE_W;
+		if (ts_data->gesture_type & 1 << 1) { // W
+			gesture = KEY_GESTURE_W;
+		}
 		break;
 	case GESTURE_M:
-		gesture = KEY_GESTURE_M;
+		if (ts_data->gesture_type & 1 << 4) { // M
+			gesture = KEY_GESTURE_M;
+		}
 		break;
 	case GESTURE_E:
-		gesture = KEY_GESTURE_E;
+		if (fts_data->gesture_type & 1 << 3) { // e
+			gesture = KEY_GESTURE_E;
+		}
 		break;
 #if !defined ASUS_SAKE_PROJECT
 	case GESTURE_L:
@@ -462,30 +420,40 @@ static void fts_gesture_report(struct input_dev *input_dev, int gesture_id)
 		break;
 #endif
 	case GESTURE_S:
-		gesture = KEY_GESTURE_S;
+		if (ts_data->gesture_type & 1 << 2) { // S
+			gesture = KEY_GESTURE_S;
+		}
 		break;
 	case GESTURE_V:
-		gesture = KEY_GESTURE_V;
+		if (fts_data->gesture_type & 1 << 6) { // V
+			gesture = KEY_GESTURE_V;
+		}
 		break;
 	case GESTURE_Z:
-		gesture = KEY_GESTURE_Z;
+		if (fts_data->gesture_type & 1 << 5) { // Z
+			gesture = KEY_GESTURE_Z;
+		}
 		break;
 #if !defined ASUS_SAKE_PROJECT
 	case GESTURE_C:
 		gesture = KEY_GESTURE_C;
 		break;
 #endif
-#if defined ASUS_SAKE_PROJECT
-	case GESTURE_MUSIC_PAUSE:
-		gesture = KEY_GESTURE_PAUSE;
+	case MUSIC_PAUSE:
+		if (ts_data->gesture_type & 1 << 7) {
+			gesture = KEY_GESTURE_PAUSE;
+		}
 		break;
-	case GESTURE_MUSIC_REWIND:
-		gesture = KEY_GESTURE_REWIND;
+	case MUSIC_REWIND:
+		if (ts_data->gesture_type & 1 << 7) {
+			gesture = KEY_GESTURE_REWIND;
+		}
 		break;
-	case GESTURE_MUSIC_FORWARD:
-		gesture = KEY_GESTURE_FORWARD;
+	case MUSIC_FORWARD:
+		if (ts_data->gesture_type & 1 << 7) {
+			gesture = KEY_GESTURE_FORWARD;
+		}
 		break;
-#endif
 	default:
 		gesture = -1;
 		break;
@@ -522,7 +490,6 @@ int fts_gesture_readdata(struct fts_ts_data *ts_data, u8 *data)
 	int index = 0;
 #endif
 	u8 buf[FTS_GESTURE_DATA_LEN] = { 0 };
-	struct input_dev *input_dev = ts_data->input_dev;
 	struct fts_gesture_st *gesture = &fts_gesture_data;
 
 	if (!ts_data->suspended || !ts_data->gesture_mode) {
@@ -580,8 +547,8 @@ int fts_gesture_readdata(struct fts_ts_data *ts_data, u8 *data)
 
 #if defined ASUS_SAKE_PROJECT
 	switch (gesture->gesture_id) {
-	case GESTURE_FOD_PRESS:
-	case GESTURE_FOD_PARTIAL_PRESS:
+	case GESTURE_F:
+	case GESTURE_O:
 		if (gesture->point_num >= 1) {
 			ts_data->fp_x = ((buf[4] & 0x0F) << 8) + buf[5];
 			ts_data->fp_y = ((buf[6] & 0x0F) << 8) + buf[7];
@@ -591,19 +558,14 @@ int fts_gesture_readdata(struct fts_ts_data *ts_data, u8 *data)
 
 		sysfs_notify(&ts_data->dev->kobj, NULL, "fts_fod_pressed");
 		return 0;
-	case GESTURE_FOD_UNPRESS:
+	case GESTURE_U:
 		ts_data->fod_pressed = false;
-		return 0;
-	case GESTURE_DOUBLECLICK:
-		ts_data->double_click_pressed = true;
-		sysfs_notify(&ts_data->dev->kobj, NULL,
-			     "fts_double_click_pressed");
 		return 0;
 	}
 #endif
 
 	/* report gesture to OS */
-	fts_gesture_report(input_dev, gesture->gesture_id);
+	fts_gesture_report(ts_data, gesture->gesture_id);
 	return 0;
 }
 
@@ -697,29 +659,45 @@ int fts_gesture_init(struct fts_ts_data *ts_data)
 
 	FTS_FUNC_ENTER();
 	input_set_capability(input_dev, EV_KEY, KEY_POWER);
+	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_U);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_UP);
-#if !defined ASUS_SAKE_PROJECT
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_DOWN);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_LEFT);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_RIGHT);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_O);
-#endif
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_E);
+	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_F);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_M);
-#if !defined ASUS_SAKE_PROJECT
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_L);
-#endif
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_W);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_S);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_V);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_Z);
-#if !defined ASUS_SAKE_PROJECT
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_C);
-#endif
 	input_set_capability(input_dev, EV_KEY, KEY_WAKEUP);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_PAUSE);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_REWIND);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_FORWARD);
+
+	__set_bit(KEY_GESTURE_RIGHT, input_dev->keybit);
+	__set_bit(KEY_GESTURE_LEFT, input_dev->keybit);
+	__set_bit(KEY_GESTURE_UP, input_dev->keybit);
+	__set_bit(KEY_GESTURE_DOWN, input_dev->keybit);
+	__set_bit(KEY_GESTURE_U, input_dev->keybit);
+	__set_bit(KEY_GESTURE_O, input_dev->keybit);
+	__set_bit(KEY_GESTURE_E, input_dev->keybit);
+	__set_bit(KEY_GESTURE_F, input_dev->keybit);
+	__set_bit(KEY_GESTURE_M, input_dev->keybit);
+	__set_bit(KEY_GESTURE_W, input_dev->keybit);
+	__set_bit(KEY_GESTURE_L, input_dev->keybit);
+	__set_bit(KEY_GESTURE_S, input_dev->keybit);
+	__set_bit(KEY_GESTURE_V, input_dev->keybit);
+	__set_bit(KEY_GESTURE_C, input_dev->keybit);
+	__set_bit(KEY_GESTURE_Z, input_dev->keybit);
+	__set_bit(KEY_WAKEUP, input_dev->keybit);
+	__set_bit(KEY_GESTURE_PAUSE, input_dev->keybit);
+	__set_bit(KEY_GESTURE_REWIND, input_dev->keybit);
+	__set_bit(KEY_GESTURE_FORWARD, input_dev->keybit);
 
 #if defined ASUS_SAKE_PROJECT
 	INIT_DELAYED_WORK(&ts_data->gesture_work, fts_gesture_work);

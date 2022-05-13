@@ -126,8 +126,6 @@
 
 #if defined ASUS_SAKE_PROJECT
 #define FTS_REG_REPORT_RATE 0xC3
-#define FTS_REPORT_RATE_240 0
-#define FTS_REPORT_RATE_120 1
 #endif
 
 #define FTS_SYSFS_ECHO_ON(buf) (buf[0] == '1')
