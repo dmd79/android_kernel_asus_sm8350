@@ -57,7 +57,8 @@ free_power_settings:
 static int32_t cam_actuator_power_up(struct cam_actuator_ctrl_t *a_ctrl)
 {
 	int rc = 0;
-#if !defined ASUS_SAKE_PROJECT && !defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#else
 	struct cam_hw_soc_info  *soc_info =
 		&a_ctrl->soc_info;
 	struct cam_actuator_soc_private  *soc_private;
@@ -103,6 +104,7 @@ static int32_t cam_actuator_power_up(struct cam_actuator_ctrl_t *a_ctrl)
 
 	power_info->dev = soc_info->dev;
 
+
 	rc = cam_sensor_core_power_up(power_info, soc_info);
 	if (rc) {
 		CAM_ERR(CAM_ACTUATOR,
@@ -111,27 +113,33 @@ static int32_t cam_actuator_power_up(struct cam_actuator_ctrl_t *a_ctrl)
 	}
 #endif
 
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+	asus_vcm_move_write(1);//ASUS_BSP Jason fix multi actuator write
+#endif
+
 	rc = camera_io_init(&a_ctrl->io_master_info);
 	if (rc < 0) {
 		CAM_ERR(CAM_ACTUATOR, "cci init failed: rc: %d", rc);
+    CAM_INFO(CAM_ACTUATOR, "Actuator POWER UP!");
 		goto cci_failure;
 	}
 
 	return rc;
-cci_failure:
 
-#if !defined ASUS_SAKE_PROJECT && !defined ASUS_VODKA_PROJECT
+cci_failure:
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#else
 	if (cam_sensor_util_power_down(power_info, soc_info))
 		CAM_ERR(CAM_ACTUATOR, "Power down failure");
 #endif
-
 	return rc;
 }
 
 static int32_t cam_actuator_power_down(struct cam_actuator_ctrl_t *a_ctrl)
 {
 	int32_t rc = 0;
-#if !defined ASUS_SAKE_PROJECT && !defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#else
 	struct cam_sensor_power_ctrl_t *power_info;
 	struct cam_hw_soc_info *soc_info = &a_ctrl->soc_info;
 	struct cam_actuator_soc_private  *soc_private;
@@ -150,6 +158,8 @@ static int32_t cam_actuator_power_down(struct cam_actuator_ctrl_t *a_ctrl)
 		CAM_ERR(CAM_ACTUATOR, "failed: power_info %pK", power_info);
 		return -EINVAL;
 	}
+
+
 	rc = cam_sensor_util_power_down(power_info, soc_info);
 	if (rc) {
 		CAM_ERR(CAM_ACTUATOR, "power down the core is failed:%d", rc);
@@ -157,42 +167,65 @@ static int32_t cam_actuator_power_down(struct cam_actuator_ctrl_t *a_ctrl)
 	}
 #endif
 
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+	asus_vcm_move_write(1);//ASUS_BSP Jason fix multi actuator write
+#endif
 	camera_io_release(&a_ctrl->io_master_info);
-
+    CAM_INFO(CAM_ACTUATOR, "Actuator POWER DOWN!");
 	return rc;
 }
 
-static void override_i2c_write_setting(struct camera_io_master *io_master_info,
-				       struct cam_sensor_i2c_reg_setting *setting)
+//ASUS_BSP Zhengwei +++ "porting actuator"
+static void override_i2c_write_setting(struct camera_io_master *io_master_info, struct cam_sensor_i2c_reg_setting * setting, const char * op_string)
 {
-	struct cam_actuator_ctrl_t *a_ctrl = container_of(io_master_info,
-			struct cam_actuator_ctrl_t, io_master_info);
 	int i;
-
-	for (i = 0; i < setting->size; i++) {
-		if (g_vcm_slave_id != 0x48 &&
-		    setting->reg_setting[i].reg_addr == 0x84) {
-			setting->reg_setting[i].reg_data &= 0x0FFF;
-
-			if (setting->reg_setting[i].reg_data == 0x0)
-				setting->reg_setting[i].reg_data = 0x1;
-
-			a_ctrl->lens_pos = setting->reg_setting[i].reg_data;
-		} else if (g_vcm_slave_id == 0x48 &&
-			   setting->reg_setting[i].reg_addr == 0xF01A) {
-			setting->reg_setting[i].reg_data &= 0x07FF;
-
-			if (setting->reg_setting[i].reg_data == 0x07FF)
-				setting->reg_setting[i].reg_data = 0x07FE;
-			else if (setting->reg_setting[i].reg_data == 0x0)
-				setting->reg_setting[i].reg_data = 0x1;
-
-			a_ctrl->lens_pos = setting->reg_setting[i].reg_data;
-
-			setting->reg_setting[i].reg_data |= 0x10000;
+	int32_t dac;
+	struct cam_actuator_ctrl_t *a_ctrl = container_of(io_master_info,struct cam_actuator_ctrl_t,io_master_info);
+	for(i=0;i<setting->size;i++)
+	{
+		CAM_DBG(CAM_ACTUATOR,"OP %s, [%d/%d], addr[0x%x] = 0x%x",
+					op_string,
+					i+1,setting->size,
+					setting->reg_setting[i].reg_addr,
+					setting->reg_setting[i].reg_data
+				);
+		if(g_vcm_slave_id != 0x48)
+		{
+			if(setting->reg_setting[i].reg_addr == 0x84)
+			{
+				setting->reg_setting[i].reg_data = setting->reg_setting[i].reg_data & 0x0FFF;
+				if(setting->reg_setting[i].reg_data == 0x0)
+					setting->reg_setting[i].reg_data = 0x1;
+				dac = setting->reg_setting[i].reg_data;
+				a_ctrl->lens_pos = dac;
+				CAM_DBG(CAM_ACTUATOR,"DAC 0x%x, lens_pos %d",
+						 setting->reg_setting[i].reg_data,
+						 dac
+						 );
+			}
+		}
+		else
+		{
+			if(setting->reg_setting[i].reg_addr == 0xF01A)
+			{
+				setting->reg_setting[i].reg_data = setting->reg_setting[i].reg_data & 0x07FF;
+				if(setting->reg_setting[i].reg_data == 0x07FF)
+					setting->reg_setting[i].reg_data = 0x07FE;
+				else if(setting->reg_setting[i].reg_data == 0x0)
+					setting->reg_setting[i].reg_data = 0x1;
+				dac = setting->reg_setting[i].reg_data;
+				a_ctrl->lens_pos = dac;
+				setting->reg_setting[i].reg_data = (0x0001<<16)|(dac);
+				CAM_DBG(CAM_ACTUATOR,"DAC 0x%x, lens_pos %d",
+						 setting->reg_setting[i].reg_data,
+						 dac
+						 );
+			}
 		}
 	}
 }
+//ASUS_BSP Zhengwei --- "porting actuator"
+
 
 static int32_t cam_actuator_i2c_modes_util(
 	struct camera_io_master *io_master_info,
@@ -202,8 +235,7 @@ static int32_t cam_actuator_i2c_modes_util(
 	uint32_t i, size;
 
 	if (i2c_list->op_code == CAM_SENSOR_I2C_WRITE_RANDOM) {
-		override_i2c_write_setting(io_master_info,
-					   &(i2c_list->i2c_settings));
+		override_i2c_write_setting(io_master_info,&(i2c_list->i2c_settings),"WRITE_RANDOM");
 		rc = camera_io_dev_write(io_master_info,
 			&(i2c_list->i2c_settings));
 		if (rc < 0) {
@@ -213,8 +245,7 @@ static int32_t cam_actuator_i2c_modes_util(
 			return rc;
 		}
 	} else if (i2c_list->op_code == CAM_SENSOR_I2C_WRITE_SEQ) {
-		override_i2c_write_setting(io_master_info,
-					   &(i2c_list->i2c_settings));
+		override_i2c_write_setting(io_master_info,&(i2c_list->i2c_settings),"WRITE_SEQ");
 		rc = camera_io_dev_write_continuous(
 			io_master_info,
 			&(i2c_list->i2c_settings),
@@ -226,8 +257,7 @@ static int32_t cam_actuator_i2c_modes_util(
 			return rc;
 			}
 	} else if (i2c_list->op_code == CAM_SENSOR_I2C_WRITE_BURST) {
-		override_i2c_write_setting(io_master_info,
-					   &(i2c_list->i2c_settings));
+		override_i2c_write_setting(io_master_info,&(i2c_list->i2c_settings),"WRITE_BURST");
 		rc = camera_io_dev_write_continuous(
 			io_master_info,
 			&(i2c_list->i2c_settings),
@@ -311,8 +341,17 @@ int32_t cam_actuator_apply_settings(struct cam_actuator_ctrl_t *a_ctrl,
 		return -EINVAL;
 	}
 
-	if (g_vcm_slave_id != 0x48 ||
-	    get_ois_power_state(OIS_CLIENT_OV08A10) == 1)
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+	//ASUS_BSP +++ Zhengwei "enable/disable vcm move dynamically for debug"
+	if(!asus_allow_vcm_move())
+	{
+		CAM_ERR(CAM_ACTUATOR,"OIS not allow vcm move, bypass vcm writing!\n");
+		return 0;
+	}
+	//ASUS_BSP --- Zhengwei "enable/disable vcm move dynamically for debug"
+#endif
+
+    if(g_vcm_slave_id != 0x48)
 	list_for_each_entry(i2c_list,
 		&(i2c_set->list_head), list) {
 		rc = cam_actuator_i2c_modes_util(
@@ -328,7 +367,32 @@ int32_t cam_actuator_apply_settings(struct cam_actuator_ctrl_t *a_ctrl,
 				i2c_set->request_id);
 		}
 	}
-
+	else
+	{
+		if(get_ois_power_state(OIS_CLIENT_OV08A10) == 1)
+		{
+			list_for_each_entry(i2c_list,
+				&(i2c_set->list_head), list) {
+				rc = cam_actuator_i2c_modes_util(
+					&(a_ctrl->io_master_info),
+					i2c_list);
+				if (rc < 0) {
+					CAM_ERR(CAM_ACTUATOR,
+						"Failed to apply settings: %d",
+						rc);
+				} else {
+					CAM_DBG(CAM_ACTUATOR,
+						"Success:request ID: %d",
+						i2c_set->request_id);
+				}
+			}
+		}
+		else
+		{
+			rc = 0;
+			CAM_INFO(CAM_ACTUATOR,"OIS doing busy job, not config VCM this time");
+		}
+	}
 	return rc;
 }
 
@@ -912,11 +976,6 @@ int32_t cam_actuator_driver_cmd(struct cam_actuator_ctrl_t *a_ctrl,
 
 		actuator_acq_dev.device_handle =
 			cam_create_device_hdl(&bridge_params);
-		if (actuator_acq_dev.device_handle <= 0) {
-			rc = -EFAULT;
-			CAM_ERR(CAM_ACTUATOR, "Can not create device handle");
-			goto release_mutex;
-		}
 		a_ctrl->bridge_intf.device_hdl = actuator_acq_dev.device_handle;
 		a_ctrl->bridge_intf.session_hdl =
 			actuator_acq_dev.session_handle;

@@ -21,7 +21,7 @@ extern int32_t trans_dac_value(uint32_t input_dac);
 extern int actuator_power_up(struct cam_actuator_ctrl_t *actuator_ctrl);
 extern int actuator_power_down(struct cam_actuator_ctrl_t *actuator_ctrl);
 extern void actuator_probe_check(void);
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 extern uint8_t asus_allow_vcm_move(void);
 extern void asus_vcm_move_write(int enable); //ASUS_BSP Jason fix multi actuator write
 #endif

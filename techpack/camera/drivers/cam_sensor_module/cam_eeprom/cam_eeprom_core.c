@@ -14,7 +14,7 @@
 #include "cam_packet_util.h"
 
 #define MAX_READ_SIZE  0x7FFFF
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 #define MAX_LEGAL_EEPROM_NUMBER  8
 
 extern void eeprom_dump_create(struct cam_eeprom_ctrl_t * e_ctrl,uint8_t eeprom_module_group_index); //ASUS_BSP Zhengwei "porting eeprom"
@@ -43,10 +43,9 @@ static int cam_eeprom_read_memory(struct cam_eeprom_ctrl_t *e_ctrl,
 	struct cam_eeprom_memory_map_t    *emap = block->map;
 	struct cam_eeprom_soc_private     *eb_info = NULL;
 	uint8_t                           *memptr = block->mapdata;
-	#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+	#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 	uint32_t                           i;
 	#endif
-
 	if (!e_ctrl) {
 		CAM_ERR(CAM_EEPROM, "e_ctrl is NULL");
 		return -EINVAL;
@@ -128,8 +127,7 @@ static int cam_eeprom_read_memory(struct cam_eeprom_ctrl_t *e_ctrl,
 			}
 			memptr += emap[j].mem.valid_size;
 		}
-
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
         for(i = 0x00 ; i < e_ctrl->cal_data.num_data; i++)
         {
            if( i < 0x1F || (i >= 0x1BFD && i<= 0x1C0A ))
@@ -380,10 +378,6 @@ static int32_t cam_eeprom_get_dev_handle(struct cam_eeprom_ctrl_t *e_ctrl,
 
 	eeprom_acq_dev.device_handle =
 		cam_create_device_hdl(&bridge_params);
-	if (eeprom_acq_dev.device_handle <= 0) {
-		CAM_ERR(CAM_EEPROM, "Can not create device handle");
-		return -EFAULT;
-	}
 	e_ctrl->bridge_intf.device_hdl = eeprom_acq_dev.device_handle;
 	e_ctrl->bridge_intf.session_hdl = eeprom_acq_dev.session_handle;
 
@@ -1221,7 +1215,7 @@ static int32_t cam_eeprom_pkt_parse(struct cam_eeprom_ctrl_t *e_ctrl, void *arg)
 	struct cam_eeprom_soc_private  *soc_private =
 		(struct cam_eeprom_soc_private *)e_ctrl->soc_info.soc_private;
 	struct cam_sensor_power_ctrl_t *power_info = &soc_private->power_info;
-	#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+	#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 	uint32_t camera_id;
 	uint8_t eeprom_module_group_index;
 	#endif
@@ -1276,8 +1270,12 @@ static int32_t cam_eeprom_pkt_parse(struct cam_eeprom_ctrl_t *e_ctrl, void *arg)
 			vfree(e_ctrl->cal_data.map);
 			e_ctrl->cal_data.num_data = 0;
 			e_ctrl->cal_data.num_map = 0;
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+			CAM_DBG(CAM_EEPROM, "[eeprom_debug] Returning the data using kernel probe");
+#else
 			CAM_DBG(CAM_EEPROM,
 				"Returning the data using kernel probe");
+#endif			
 			break;
 		}
 		rc = cam_eeprom_init_pkt_parser(e_ctrl, csl_packet);
@@ -1304,7 +1302,7 @@ static int32_t cam_eeprom_pkt_parse(struct cam_eeprom_ctrl_t *e_ctrl, void *arg)
 			}
 		}
 
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 		if(get_camera_id_for_submodule(SUB_MODULE_EEPROM, e_ctrl->soc_info.index, &camera_id) != 0)
 		{
 			pr_err("can not find related camera id for eeprom index %d, use its index as camera id",e_ctrl->soc_info.index);
@@ -1594,6 +1592,7 @@ int32_t cam_eeprom_driver_cmd(struct cam_eeprom_ctrl_t *e_ctrl, void *arg)
 		e_ctrl->cam_eeprom_state = CAM_EEPROM_INIT;
 		break;
 	case CAM_CONFIG_DEV:
+//ASUS_BSP jason  add eeprom read retry +++
 		rc = cam_eeprom_pkt_parse(e_ctrl, arg);
 		if (rc) {
 			CAM_ERR(CAM_EEPROM, "Failed in eeprom pkt Parsing");
@@ -1607,6 +1606,7 @@ int32_t cam_eeprom_driver_cmd(struct cam_eeprom_ctrl_t *e_ctrl, void *arg)
 				}
 			}
 		}
+//ASUS_BSP jason  add eeprom read retry ---
 		break;
 	default:
 		CAM_DBG(CAM_EEPROM, "invalid opcode");

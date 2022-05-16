@@ -146,6 +146,15 @@ static eeprom_group_t  g_eeprom_group[] =
                //LRC_SIZE  DUAL_NUM  IS_CHANGED  IsSuporrtVersion
                  0,        2,        0,          0},
 
+#ifdef ASUS_PICASSO_PROJECT
+
+  //MODULE_ID  SENSOR_NAME  AF_INFINITY_START_ADDR  AF_MACRO_START_ADDR
+  {0x72,       "OV24B1Q_P", -1,                     -1,
+		//PDAF_CALI_START_ADDR    REMOSAIC_CALI_START_ADDR     LRC_START
+		  -1,                     OV24B1Q_EEPROM_MAP_START,    -1,
+		//LRC_SIZE  DUAL_NUM  IS_CHANGED  IsSuporrtVersion
+		  0,        0,        0,          0},
+#else
   //MODULE_ID  SENSOR_NAME  AF_INFINITY_START_ADDR  AF_MACRO_START_ADDR
   {0x72,       "OV24B1Q_R", -1,                     -1,
 		//PDAF_CALI_START_ADDR    REMOSAIC_CALI_START_ADDR     LRC_START
@@ -153,6 +162,7 @@ static eeprom_group_t  g_eeprom_group[] =
 		//LRC_SIZE  DUAL_NUM  IS_CHANGED  IsSuporrtVersion
 		  0,        0,        0,          0},
 
+#endif
 #ifdef ASUS_VODKA_PROJECT
   //MODULE_ID  SENSOR_NAME  AF_INFINITY_START_ADDR  AF_MACRO_START_ADDR
   {0x71,        "IMX686_V",  CALI_AF_INFINITY_START, CALI_AF_MACRO_START,

@@ -123,7 +123,7 @@ static uint32_t g_dac_infinity_base[OIS_CLIENT_MAX] = {0};
 //static uint32_t g_lens_shift_10cm = 0;
 static uint8_t  g_verbose_log = 0;
 static uint32_t g_lens_position_reg[2] = {0};
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 static void dump_sma_eeprom(struct cam_ois_ctrl_t *oisCtrl,uint32_t addr,uint8_t length);
 #endif
 #if defined ASUS_SAKE_PROJECT
@@ -248,7 +248,7 @@ static int32_t get_ois_ctrl(struct cam_ois_ctrl_t **o_ctrl) {
 	*o_ctrl = NULL;
 	return -1;
 }
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 static fw_trigger_result_t trigger_fw_update(struct cam_ois_ctrl_t *ctrl, uint8_t update_mode, uint8_t force_update, uint32_t* updated_version)
 {
 	uint32_t fw_version;
@@ -717,7 +717,7 @@ static ssize_t ois_cali_proc_write(struct file *dev, const char *buf, size_t cou
     //ASUS_BSP Lucien +++: Save one Gyro data after doing OIS calibration
 	rc = onsemi_gyro_read_xy(oisCtrl, &gyro_data[0], &gyro_data[1]);
 	if(rc < 0) pr_err("onsemi_gyro_read_xy get fail! rc = %d\n", rc);
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
 	rc = sysfs_write_dword_seq_change_line(OIS_GYRO_K_OUTPUT_FILE_NEW,gyro_data,GYRO_K_REG_COUNT,2,0);
 #endif
 	if(rc != 0) pr_err("sysfs_write_dword_seq_change_line fail! rc = %d\n", rc);
@@ -1212,7 +1212,7 @@ static const struct file_operations ois_solo_power_fops = {
 static int ois_state_proc_read(struct seq_file *buf, void *v)
 {
 	char dump_buf[512];//must be large enough
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
 	uint8_t battery_capacity;
 #endif
 	struct cam_ois_ctrl_t *oisCtrl = NULL;
@@ -1225,7 +1225,7 @@ static int ois_state_proc_read(struct seq_file *buf, void *v)
 		ZF7_WaitProcess(oisCtrl,0,__func__);
 		onsemi_dump_state(oisCtrl,dump_buf,sizeof(dump_buf));
 		seq_printf(buf, "%s\n", dump_buf);
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT		
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT		
 		if(sysfs_read_uint8(BATTERY_CAPACITY,&battery_capacity) == 0)
 		{
 			pr_info("get battery capacity is %d%%\n",battery_capacity);
@@ -1413,7 +1413,7 @@ static int process_rdata(int count,int32_t ois_index)
 	);
 
 	onsemi_restore_ois_state(ois_ctrl[ois_index],old_state);
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
 	if(i == count)
 	{
 		//all pass, store to /sdcard/gyro.csv
@@ -1442,7 +1442,7 @@ static int process_rdata(int count,int32_t ois_index)
 
 static int ois_rdata_proc_read(struct seq_file *buf, void *v)
 {
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
 	uint8_t* pText;
 	uint64_t size;
 #endif
@@ -1450,7 +1450,7 @@ static int ois_rdata_proc_read(struct seq_file *buf, void *v)
 	if(oisCtrl == NULL) return -1;
 	
 	mutex_lock(&oisCtrl->ois_mutex);
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 	if(get_file_size(RDATA_OUTPUT_FILE,&size) == 0 && size > 0)
 	{
 		pText = kzalloc(sizeof(uint8_t)*size,GFP_KERNEL);
@@ -1608,7 +1608,7 @@ static ssize_t ois_update_fw_write(struct file *dev, const char *buf, size_t len
 	}
 
 	pr_info("trigger fw update, force update %d, update mode %d\n",force_update,update_mode);
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 	trigger_fw_update(oisCtrl, update_mode, force_update, &g_fw_version);
 #endif
 
@@ -1721,7 +1721,7 @@ static ssize_t ois_sma_eeprom_dump_write(struct file *dev, const char *buf, size
 	sscanf(messages, "%x %u", &addr,&length);
 
 	pr_info("check addr(0x%x),length(%u)\n",addr,length);
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
 	dump_sma_eeprom(oisCtrl,addr,length);
 #endif
 	return ret_len;
@@ -1811,7 +1811,7 @@ void track_mode_change_from_i2c_write(struct cam_sensor_i2c_reg_setting * settin
 	uint32_t data[2];
 	bool     ret[2];
 
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT	
 	uint16_t index[2];
 	ret[0] = i2c_setting_contain_address(setting,0xF013, &data[0], &index[0]);//movie/still mode
 	ret[1] = i2c_setting_contain_address(setting,0xF012, &data[1], &index[1]);//ois on/off
@@ -2488,7 +2488,7 @@ void asus_ois_init(struct cam_ois_ctrl_t * ctrl)
 	//onsemi_get_10cm_lens_shift(&g_lens_shift_10cm);//TODO
 }
 //ASUS_BSP Byron add for sma eeprom dump +++
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 static void dump_sma_eeprom(struct cam_ois_ctrl_t *oisCtrl,uint32_t addr,uint8_t length) {
 	const uint32_t addr_offset = 0x01320300;
 	uint32_t check_value;

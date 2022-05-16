@@ -172,6 +172,9 @@ camera-$(CONFIG_SPECTRA_SENSOR) += \
 	cam_sensor_module/cam_ois/cam_ois_dev.o \
 	cam_sensor_module/cam_ois/cam_ois_core.o \
 	cam_sensor_module/cam_ois/cam_ois_soc.o \
+	cam_sensor_module/cam_ois/onsemi_i2c.o \
+	cam_sensor_module/cam_ois/onsemi_interface.o \
+	cam_sensor_module/cam_ois/asus_ois.o \
 	cam_sensor_module/cam_sensor/cam_sensor_dev.o \
 	cam_sensor_module/cam_sensor/cam_sensor_core.o \
 	cam_sensor_module/cam_sensor/cam_sensor_soc.o \
@@ -182,14 +185,17 @@ camera-$(CONFIG_SPECTRA_SENSOR) += \
 	cam_sensor_module/cam_sensor_utils/cam_sensor_util.o \
 	cam_sensor_module/cam_res_mgr/cam_res_mgr.o
 
+ifeq ($(CONFIG_MACH_ASUS_ZS673KS),y)
 camera-$(CONFIG_SPECTRA_SENSOR) += \
-	cam_sensor_module/cam_ois/onsemi_i2c.o \
-	cam_sensor_module/cam_ois/onsemi_interface.o \
-	cam_sensor_module/cam_ois/asus_ois.o \
+  cam_sensor_module/cam_ois/utils.o \
+	cam_sensor_module/cam_actuator/actuator_i2c.o \
+	cam_sensor_module/cam_actuator/asus_actuator.o \
+	cam_sensor_module/cam_sensor/asus_cam_sensor.o
+endif
 
 ifeq ($(CONFIG_MACH_ASUS_SAKE),y)
 camera-$(CONFIG_SPECTRA_SENSOR) += \
-	cam_sensor_module/cam_ois/utils.o \
+  cam_sensor_module/cam_ois/utils.o \
 	cam_sensor_module/cam_actuator/actuator_i2c.o \
 	cam_sensor_module/cam_actuator/asus_actuator.o \
 	cam_sensor_module/cam_sensor/asus_cam_sensor.o
@@ -200,7 +206,7 @@ camera-$(CONFIG_SPECTRA_SENSOR) += \
   cam_sensor_module/cam_ois/utils.o \
 	cam_sensor_module/cam_actuator/actuator_i2c.o \
 	cam_sensor_module/cam_actuator/asus_actuator.o \
-	cam_sensor_module/cam_sensor/asus_cam_sensor.o
+	cam_sensor_module/cam_sensor/asus_cam_sensor.o	
 endif
 
 camera-$(CONFIG_LEDS_QPNP_FLASH_V2) += \
@@ -208,12 +214,58 @@ camera-$(CONFIG_LEDS_QPNP_FLASH_V2) += \
 	cam_sensor_module/cam_flash/cam_flash_core.o \
 	cam_sensor_module/cam_flash/cam_flash_soc.o
 
+ifeq ($(CONFIG_MACH_ASUS_ZS673KS),y)
+camera-$(CONFIG_LEDS_QPNP_FLASH_V2) += \
+	cam_sensor_module/cam_flash/asus_flash.o
+endif
+
+ifeq ($(CONFIG_MACH_ASUS_SAKE),y)
+camera-$(CONFIG_LEDS_QPNP_FLASH_V2) += \
+	cam_sensor_module/cam_flash/asus_flash.o
+endif
+
+ifeq ($(CONFIG_MACH_ASUS_VODKA),y)
+camera-$(CONFIG_LEDS_QPNP_FLASH_V2) += \
+	cam_sensor_module/cam_flash/asus_flash.o
+endif
+
+
+
 ifneq (,$(filter $(CONFIG_LEDS_QTI_FLASH),y m))
 camera-y += \
 	cam_sensor_module/cam_flash/cam_flash_dev.o \
 	cam_sensor_module/cam_flash/cam_flash_core.o \
 	cam_sensor_module/cam_flash/cam_flash_soc.o
 endif
+
+ifeq ($(CONFIG_MACH_ASUS_SAKE),y)
+ifneq (,$(filter $(CONFIG_LEDS_QTI_FLASH),y m))
+camera-y += \
+	cam_sensor_module/cam_flash/asus_flash.o
+endif
+
+endif
+
+ifeq ($(CONFIG_MACH_ASUS_VODKA),y)
+ifneq (,$(filter $(CONFIG_LEDS_QTI_FLASH),y m))
+camera-y += \
+	cam_sensor_module/cam_flash/asus_flash.o
+endif
+
+endif
+
+ifeq ($(CONFIG_MACH_ASUS_ZS673KS),y)
+ifneq (,$(filter $(CONFIG_LEDS_QTI_FLASH),y m))
+camera-y += \
+	cam_sensor_module/cam_flash/asus_flash.o
+endif
+
+endif
+
+
+
+
+
 
 camera-$(CONFIG_SPECTRA_CUSTOM) += \
 	cam_cust/cam_custom_hw_mgr/cam_custom_hw1/cam_custom_sub_mod_soc.o \
@@ -258,4 +310,7 @@ obj-$(CONFIG_SPECTRA_CAMERA) += camera.o
 ifeq ($(CONFIG_SPECTRA_CAMERA),m)
 $(info "SPECTRA CAMERA IS BUILT AS DLKM")
 BOARD_VENDOR_KERNEL_MODULES +=  $(KERNEL_MODULES_OUT)/camera.ko
+endif
+ifneq (,$(filter y,$(ASUS_FTM)))
+subdir-ccflags-y += -DCAM_FACTORY_CONFIG
 endif

@@ -11,15 +11,31 @@
 #define	PROC_VCM_ENABLE	"driver/vcm_enable"
 #define	PROC_VCM_VALUE	"driver/vcm"
 
+#if defined(ASUS_ZS673KS_PROJECT)
+
+#define VCM_NUMBER 1 //ASUS_BSP for jason_yeh support multi camera vcm
+static uint16_t g_reg_addr = 0x84;
+static uint16_t g_slave_id = 0x72;
+
+#else
+
 #define VCM_NUMBER 9 //ASUS_BSP for jason_yeh support multi camera vcm
 static uint16_t g_reg_addr = 0xF01A;
 static uint16_t g_slave_id = 0x24;
 
+#endif
+
+#if defined(ASUS_ZS673KS_PROJECT)
+static uint16_t vcm_dac_reg_addr[VCM_NUMBER]={0x84}; //imx686//ASUS_BSP for jason_yeh support multi camera vcm
+#endif
 #if defined(ASUS_VODKA_PROJECT)
 static uint16_t vcm_dac_reg_addr[VCM_NUMBER]={0x84,0x84,0x84,0x03}; //imx686,imx363,,imx363,ov08a //ASUS_BSP for jason_yeh support multi camera vcm
 #endif
 #if defined(ASUS_SAKE_PROJECT)
 static uint16_t vcm_dac_reg_addr[VCM_NUMBER]={0x84,0x03,0x84,0x03}; //imx686,imx663,imx363,ov08a //ASUS_BSP for jason_yeh support multi camera vcm
+#endif
+#if defined(ASUS_PICASSO_PROJECT)
+static uint16_t vcm_dac_reg_addr[VCM_NUMBER]={0x84,0,0x84,0xF01A}; //imx686,ov24b1q(NO VCM),imx363,ov08a //ASUS_BSP for jason_yeh support multi camera vcm
 #endif
 
 static struct cam_actuator_ctrl_t * actuator_ctrl = NULL;
@@ -688,7 +704,7 @@ uint8_t asus_allow_vcm_move(void)
 }
 //ASUS_BSP Jason ---fix multi actuator write
 
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 void asus_vcm_move_write(int enable)
 {
 	 g_vcm_enabled=enable;

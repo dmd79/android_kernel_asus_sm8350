@@ -13,7 +13,7 @@
 #define CAM_REQ_MGR_MAX_LINKED_DEV     16
 #define MAX_REQ_SLOTS                  48
 
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 #define CAM_REQ_MGR_WATCHDOG_TIMEOUT          20000
 #else
 #define CAM_REQ_MGR_WATCHDOG_TIMEOUT          1000

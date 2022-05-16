@@ -1714,20 +1714,20 @@ static int __cam_req_mgr_process_req(struct cam_req_mgr_core_link *link,
 		return -EINVAL;
 	}
 
-	mutex_lock(&session->lock);
 	/*
-	 * During session destroy/unlink the link state is updated and session
-	 * mutex is released when flushing the workq. In case the wq is scheduled
-	 * thereafter this API will then check the updated link state and exit
+	 * In case if the wq is scheduled while destroying session
+	 * the session mutex is already taken and will cause a
+	 * dead lock. To avoid further processing check link state
+	 * and exit.
 	 */
 	spin_lock_bh(&link->link_state_spin_lock);
 	if (link->state == CAM_CRM_LINK_STATE_IDLE) {
 		spin_unlock_bh(&link->link_state_spin_lock);
-		mutex_unlock(&session->lock);
 		return -EPERM;
 	}
 	spin_unlock_bh(&link->link_state_spin_lock);
 
+	mutex_lock(&session->lock);
 	in_q = link->req.in_q;
 	/*
 	 * Check if new read index,
@@ -3786,17 +3786,13 @@ end:
 /**
  * __cam_req_mgr_unlink()
  *
- * @brief  : Unlink devices on a link structure from the session
- *           This API is to be invoked with session mutex held
- * @session: session of the link
- * @link   : Pointer to the link structure
+ * @brief : Unlink devices on a link structure from the session
+ * @link  : Pointer to the link structure
  *
  * @return: 0 for success, negative for failure
  *
  */
-static int __cam_req_mgr_unlink(
-	struct cam_req_mgr_core_session *session,
-	struct cam_req_mgr_core_link *link)
+static int __cam_req_mgr_unlink(struct cam_req_mgr_core_link *link)
 {
 	int rc;
 
@@ -3812,16 +3808,14 @@ static int __cam_req_mgr_unlink(
 	}
 
 	mutex_lock(&link->lock);
+
 	spin_lock_bh(&link->link_state_spin_lock);
 	/* Destroy timer of link */
 	crm_timer_exit(&link->watchdog);
 	spin_unlock_bh(&link->link_state_spin_lock);
-	/* Release session mutex for workq processing */
-	mutex_unlock(&session->lock);
 	/* Destroy workq of link */
 	cam_req_mgr_workq_destroy(&link->workq);
-	/* Acquire session mutex after workq flush */
-	mutex_lock(&session->lock);
+
 	/* Cleanup request tables and unlink devices */
 	__cam_req_mgr_destroy_link_info(link);
 	/* Free memory holding data of linked devs */
@@ -3863,7 +3857,6 @@ int cam_req_mgr_destroy_session(
 		goto end;
 
 	}
-
 	mutex_lock(&cam_session->lock);
 	if (cam_session->num_links) {
 		CAM_DBG(CAM_CRM, "destroy session %x num_active_links %d",
@@ -3879,7 +3872,7 @@ int cam_req_mgr_destroy_session(
 				link->link_hdl);
 			/* Ignore return value since session is going away */
 			link->is_shutdown = is_shutdown;
-			__cam_req_mgr_unlink(cam_session, link);
+			__cam_req_mgr_unlink(link);
 			__cam_req_mgr_free_link(link);
 		}
 	}
@@ -4160,9 +4153,8 @@ int cam_req_mgr_unlink(struct cam_req_mgr_unlink_info *unlink_info)
 		rc = -EINVAL;
 		goto done;
 	}
-	mutex_lock(&cam_session->lock);
-	rc = __cam_req_mgr_unlink(cam_session, link);
-	mutex_unlock(&cam_session->lock);
+
+	rc = __cam_req_mgr_unlink(link);
 
 	/* Free curent link and put back into session's free pool of links */
 	__cam_req_mgr_unreserve_link(cam_session, link);
@@ -4542,7 +4534,7 @@ int cam_req_mgr_dump_request(struct cam_dump_req_cmd *dump_req)
 
 	link = (struct cam_req_mgr_core_link *)
 		cam_get_device_priv(dump_req->link_hdl);
-	if (!link || link->link_hdl != dump_req->link_hdl) {
+	if (!link) {
 		CAM_DBG(CAM_CRM, "link ptr NULL %x", dump_req->link_hdl);
 		rc = -EINVAL;
 		goto end;

@@ -354,7 +354,7 @@ static int read_file_into_buffer(const char *filename, uint8_t* data, uint32_t s
 	pos = 0;
 	num = kernel_read(fp, data, size, &pos);
 
-#if defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
+#if defined ASUS_ZS673KS_PROJECT || defined ASUS_PICASSO_PROJECT || defined ASUS_SAKE_PROJECT || defined ASUS_VODKA_PROJECT
 	filp_close(fp, NULL);
 #endif
 	pr_info("[DIT_EEPROM] read %s file, read %d bytes ",filename, num);
