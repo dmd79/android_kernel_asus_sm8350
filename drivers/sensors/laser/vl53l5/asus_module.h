@@ -11,8 +11,8 @@
 
 #define MODULE_NAME                     "stmvl53l5"
 
-#define log(fmt, args...) printk(KERN_INFO "%s: "fmt,MODULE_NAME,##args)
-#define err(fmt, args...) printk(KERN_ERR "%s: "fmt,MODULE_NAME,##args)
+#define log(fmt, args...) pr_debug("%s: "fmt,MODULE_NAME,##args)
+#define err(fmt, args...) pr_debug("%s: "fmt,MODULE_NAME,##args)
 
 struct regulator_info {
 	struct regulator *reg;  /* voltage regulator handle */

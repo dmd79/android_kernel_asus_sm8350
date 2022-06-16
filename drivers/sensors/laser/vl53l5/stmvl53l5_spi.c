@@ -47,7 +47,7 @@ int stmvl53l5_spi_write(struct spi_data_t *spi_data, int index, uint8_t *data, u
 
 	status = spi_sync(spi_data->device, &m);
 	if (status != 0) {
-		printk("stmvl53l5 : spi_sync failed. %d", status);
+		pr_debug("stmvl53l5 : spi_sync failed. %d", status);
 		goto out;
 	}
 
@@ -79,7 +79,7 @@ int stmvl53l5_spi_read(struct spi_data_t *spi_data, int index, uint8_t *data, ui
 
 	status = spi_sync(spi_data->device, &m);
 	if (status != 0) {
-		printk("stmvl53l5 : spi_sync failed. %d", status);
+		pr_debug("stmvl53l5 : spi_sync failed. %d", status);
 		goto out;
 	}
 

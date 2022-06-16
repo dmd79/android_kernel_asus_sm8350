@@ -135,7 +135,7 @@ static long stmvl53l5_ioctl(struct file *file,
 				return -EINVAL;
 			}
 
-			// printk("Transfer. write_not_read = %d, reg_index = 0x%x size = %d\n", comms_struct.write_not_read, comms_struct.reg_index, comms_struct.len);
+			// pr_debug("Transfer. write_not_read = %d, reg_index = 0x%x size = %d\n", comms_struct.write_not_read, comms_struct.reg_index, comms_struct.len);
 
 			if (i2c_not_spi) {
 				// address and buis the same whatever the transfers to be done !
@@ -272,7 +272,7 @@ static int stmvl53l5_i2c_probe(struct i2c_client *client,
 
 	i2c_not_spi = 1;
 
-	printk("stmvl53l5: probing i2c\n");
+	pr_debug("stmvl53l5: probing i2c\n");
 
 	raw_data_buffer = kzalloc(VL53L5_COMMS_CHUNK_SIZE, GFP_DMA | GFP_KERNEL);
 	if (raw_data_buffer == NULL)
@@ -286,7 +286,7 @@ static int stmvl53l5_i2c_probe(struct i2c_client *client,
 		pr_err("stmvl53l5: Error. Could not read device and revision id registers\n");
 		return ret;
 	}
-	printk("stmvl53l5: device_id : 0x%x. revision_id : 0x%x\n", device_id, revision_id);
+	pr_debug("stmvl53l5: device_id : 0x%x. revision_id : 0x%x\n", device_id, revision_id);
 
 	st_tof_miscdev.minor = MISC_DYNAMIC_MINOR;
 	st_tof_miscdev.name = "stmvl53l5";
@@ -342,7 +342,7 @@ static int stmvl53l5_spi_probe(struct spi_device *spi)
 	int ret;
 	uint8_t page = 0, revision_id = 0, device_id = 0;
 
-	printk("stmvl53l5: probing spi\n");
+	pr_debug("stmvl53l5: probing spi\n");
 
 	// ASUS init +++
         ret = asus_laser_init(&spi->dev);
@@ -378,7 +378,7 @@ static int stmvl53l5_spi_probe(struct spi_device *spi)
 		pr_err("stmvl53l5: Error. Could not read device and revision id registers\n");
 		return ret;
 	}
-	printk("stmvl53l5: device_id : 0x%x. revision_id : 0x%x\n", device_id, revision_id);
+	pr_debug("stmvl53l5: device_id : 0x%x. revision_id : 0x%x\n", device_id, revision_id);
 
 	raw_data_buffer = kzalloc(VL53L5_COMMS_CHUNK_SIZE, GFP_DMA | GFP_KERNEL);
 	if (raw_data_buffer == NULL)
@@ -425,7 +425,7 @@ static int __init st_tof_module_init(void)
 {
 	int ret = 0;
 
-	printk("stmvl53l5: module init\n");
+	pr_debug("stmvl53l5: module init\n");
 
         if(i2c_not_spi) {
 		/* register as a i2c client device */
@@ -433,23 +433,23 @@ static int __init st_tof_module_init(void)
 
 		if (ret) {
 			i2c_del_driver(&stmvl53l5_i2c_driver);
-			printk("stmvl53l5: could not add i2c driver\n");
+			pr_debug("stmvl53l5: could not add i2c driver\n");
 			return ret;
 		}
 
 		i2c_driver_added = 1;
-		printk("stmvl53l5: register i2c driver success\n");
+		pr_debug("stmvl53l5: register i2c driver success\n");
 	}
 	else {
                 /* register as a spi client device */
 	        ret = spi_register_driver(&stmvl53l5_spi_driver);
 		if (ret) {
-			printk("stmvl53l5: could not register spi driver : %d", ret);
+			pr_debug("stmvl53l5: could not register spi driver : %d", ret);
 			return ret;
 		}
 
 		spi_driver_registered = 1;
-		printk("stmvl53l5: register spi driver success\n");
+		pr_debug("stmvl53l5: register spi driver success\n");
 	}
 
 	return ret;

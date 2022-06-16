@@ -122,11 +122,11 @@ static unsigned long g_icm_next_retry_time_ms = 100;
 static u64 g_icm_irq_counter = 0;
 
 #define icm_errmsg(str, args...) \
-	printk("[icm206xx][error]%s: " str, __func__, ##args)
+	pr_debug("[icm206xx][error]%s: " str, __func__, ##args)
 
 #define icm_dbgmsg(str, args...) \
 	if (g_icm_enable_debug) \
-		printk("[icm206xx]%s: " str, __func__, ##args)
+		pr_debug("[icm206xx]%s: " str, __func__, ##args)
 
 /*
  * Timespec interfaces utilizing the ktime based ones

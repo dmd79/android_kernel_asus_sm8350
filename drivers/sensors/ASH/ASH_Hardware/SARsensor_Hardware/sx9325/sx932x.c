@@ -822,7 +822,7 @@ static void sx93XX_schedule_work(psx93XX_t this, unsigned long delay)
 		spin_unlock_irqrestore(&this->lock,flags);
 	}
 	else
-		printk(KERN_ERR "sx93XX_schedule_work, NULL psx93XX_t\n");
+		pr_debug("sx93XX_schedule_work, NULL psx93XX_t\n");
 } 
 
 static irqreturn_t sx93XX_irq(int irq, void *pvoid)
@@ -838,7 +838,7 @@ static irqreturn_t sx93XX_irq(int irq, void *pvoid)
 		}
 	}
 	else{
-		printk(KERN_ERR "sx93XX_irq, NULL pvoid\n");
+		pr_debug("sx93XX_irq, NULL pvoid\n");
 	}
 	return IRQ_HANDLED;
 }
@@ -853,7 +853,7 @@ static void sx93XX_worker_func(struct work_struct *work)
 		this = container_of(work,sx93XX_t,dworker.work);
 
 		if (!this) {
-			printk(KERN_ERR "sx93XX_worker_func, NULL sx93XX_t\n");
+			pr_debug("sx93XX_worker_func, NULL sx93XX_t\n");
 			return;
 		}
 		if (unlikely(this->useIrqTimer)) {
@@ -878,7 +878,7 @@ static void sx93XX_worker_func(struct work_struct *work)
 			sx93XX_schedule_work(this,msecs_to_jiffies(this->irqTimeout));
 		}
 	} else {
-		printk(KERN_ERR "sx93XX_worker_func, NULL work_struct\n");
+		pr_debug("sx93XX_worker_func, NULL work_struct\n");
 	}
 }
 

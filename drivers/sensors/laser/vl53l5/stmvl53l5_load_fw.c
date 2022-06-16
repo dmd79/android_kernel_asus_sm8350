@@ -155,7 +155,7 @@ int32_t wait_mcu_boot(struct i2c_client *client, struct spi_data_t *spi_data, ui
 
 exit:
 	if (status != 0)
-		printk("stmvl53l5: wait_mcu_boot failed !\n");
+		pr_debug("stmvl53l5: wait_mcu_boot failed !\n");
 
 	return status;
 }
@@ -191,12 +191,12 @@ int32_t check_rom_firmware_boot(struct i2c_client *client, uint8_t * raw_data_bu
 	status = stmvl53l5_read_multi(client, raw_data_buffer, 0x00, &device_id, 1);
 	if (status != 0)
 		goto exit;
-	printk ("stmvl53l5: device id = 0x%x\n", device_id);
+	pr_debug ("stmvl53l5: device id = 0x%x\n", device_id);
 
 	status = stmvl53l5_read_multi(client, raw_data_buffer, 0x01, &revision_id, 1);
 	if (status != 0)
 		goto exit;
-	printk ("stmvl53l5: revision id = 0x%x\n", revision_id);
+	pr_debug ("stmvl53l5: revision id = 0x%x\n", revision_id);
 
 	if ((device_id == 0xF0) && (revision_id == 0x02)) {
 		status = _check_rom_firmware_boot_cut_1_2(client, raw_data_buffer);
@@ -209,7 +209,7 @@ int32_t check_rom_firmware_boot(struct i2c_client *client, uint8_t * raw_data_bu
 
 exit:
 	if  (status != 0)
-		printk("stmvl53l5: check_rom_firmware_boot failed : %d\n", status);
+		pr_debug("stmvl53l5: check_rom_firmware_boot failed : %d\n", status);
 	return status;
 }
 
@@ -285,7 +285,7 @@ static int32_t _enable_host_access_to_go1_async(struct i2c_client *client, uint8
 
 exit:
 	if (status != 0)
-		printk("stmvl53l5: _enable_host_access_to_go1_async failed: %d\n", status);
+		pr_debug("stmvl53l5: _enable_host_access_to_go1_async failed: %d\n", status);
 	return status;
 }
 
@@ -347,7 +347,7 @@ static int32_t _set_to_power_on_status(struct i2c_client *client,  uint8_t * raw
 
 exit:
 	if (status != 0)
-		printk("stmvl53l5: _set_to_power_on_status failed : %d\n", status);
+		pr_debug("stmvl53l5: _set_to_power_on_status failed : %d\n", status);
 	return status;
 }
 
@@ -378,7 +378,7 @@ int32_t _wake_up_mcu(struct i2c_client *client,  uint8_t * raw_data_buffer)
 
 exit:
 	if (status != 0)
-		printk("stmvl53l5: _wake_up_mcu failed : %d\n", status);
+		pr_debug("stmvl53l5: _wake_up_mcu failed : %d\n", status);
 	return status;
 }
 
@@ -400,7 +400,7 @@ int32_t _wait_for_boot_complete_before_fw_load(struct i2c_client *client, uint8_
 
 exit:
 	if (status != 0)
-		printk("stmvl53l5: _wait_for_boot_complete_before_fw_load failed : %d\n", status);
+		pr_debug("stmvl53l5: _wait_for_boot_complete_before_fw_load failed : %d\n", status);
 	return status;
 }
 
@@ -435,7 +435,7 @@ int32_t _reset_mcu_and_wait_boot(struct i2c_client *client,  uint8_t * raw_data_
 
 exit:
 	if (status != 0)
-		printk("stmvl53l5: _reset_mcu_and_wait_boot failed : %d\n", status);
+		pr_debug("stmvl53l5: _reset_mcu_and_wait_boot failed : %d\n", status);
 	return status;
 }
 
@@ -454,7 +454,7 @@ int32_t _wait_for_boot_complete_after_fw_load(struct i2c_client *client,  uint8_
 
 exit:
 	if (status != 0)
-		printk("stmvl53l5: _wait_for_boot_complete_after_fw_load failed : %d\n", status);
+		pr_debug("stmvl53l5: _wait_for_boot_complete_after_fw_load failed : %d\n", status);
 	return status;
 }
 
@@ -507,7 +507,7 @@ int32_t _write_page(
 
 exit:
 	if (status != 0)
-		 printk("stmvl53l5: _write_page failed : %d\n", status);
+		 pr_debug("stmvl53l5: _write_page failed : %d\n", status);
 	return status;
 }
 
@@ -545,7 +545,7 @@ int32_t _download_fw_to_ram(struct i2c_client *client,  uint8_t * raw_data_buffe
 
 exit:
 	if (status != 0)
-		printk("stmvl53l5: _download_fw_to_ram failed : %d\n", status);
+		pr_debug("stmvl53l5: _download_fw_to_ram failed : %d\n", status);
 	return status;
 }
 
@@ -571,7 +571,7 @@ int32_t load_firmware(struct i2c_client *client,  uint8_t * raw_data_buffer)
 		goto exit;
 
 exit:
-	printk("stmvl53l5: load_firmware : GO2s0=0x%x GO2s1=0x%x status=%d\n", VL53L5_GO2_STATUS_0(&dev).bytes, VL53L5_GO2_STATUS_1(&dev).bytes, status);
+	pr_debug("stmvl53l5: load_firmware : GO2s0=0x%x GO2s1=0x%x status=%d\n", VL53L5_GO2_STATUS_0(&dev).bytes, VL53L5_GO2_STATUS_1(&dev).bytes, status);
 	return status;
 }
 
@@ -585,7 +585,7 @@ int32_t stmvl53l5_load_fw_stm(struct i2c_client *client, uint8_t * raw_data_buff
 	VL53L5_ASSIGN_COMMS_BUFF(_comms_buffer, sizeof(_comms_buffer));
 	status = check_rom_firmware_boot(client, raw_data_buffer);
 	status |= load_firmware(client, raw_data_buffer);
-	printk("stmvl53l5: load_fw : %d\n", status);
+	pr_debug("stmvl53l5: load_fw : %d\n", status);
 
 	return status;
 
@@ -626,7 +626,7 @@ int32_t stmvl53l5_move_device_to_low_power(struct i2c_client *client, struct spi
 	if (status != 0)
 		return -1;
 
-	printk("stmvl53l5: device set in low power (idle with comms) : %d\n", status);
+	pr_debug("stmvl53l5: device set in low power (idle with comms) : %d\n", status);
 
 	return status;
 
