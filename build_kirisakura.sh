@@ -14,10 +14,10 @@ echo
 mkdir -p out_cfi
 export ARCH=arm64
 export SUBARCH=arm64
-BASE_PATH=/home/miles/Android_Build/Clang_Google/linux-x86
-BASE_PATH_GCC=/home/miles/Android_Build/GCC_Google_Arm64
-BASE_PATH_GCC_32=/home/miles/Android_Build/GCC_Google_Arm32
-export DTC_EXT=/home/miles/Downloads/DU_Tools/dtc-aosp
+BASE_PATH=/data1/toolchain/clang
+BASE_PATH_GCC=/data1/toolchain
+BASE_PATH_GCC_32=/data1/toolchain
+export DTC_EXT=/data1/toolchain/dtc/dtc-aosp
 export CLANG_PATH=$BASE_PATH/clang-r450784e/bin
 export PATH=${CLANG_PATH}:${PATH}
 
@@ -71,5 +71,5 @@ echo "Build The Good Stuff"
 echo 
 
 #make CC=$CLANG_CC LD=$CLANG_LD LDLTO=$CLANG_LD AR=$CLANG_AR NM=$CLANG_NM OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip O=out_cfi -j24
-make LLVM=1 CC=$CLANG_CC LD=$CLANG_LD AR=$CLANG_AR STRIP=$CLANG_STRIP OBJCOPY=$CLANG_OC NM=$CLANG_NM OBJDUMP=$CLANG_OD OBJSIZE=$CLANG_OS READELF=$CLANG_RE HOSTCC=$CLANG_CC HOSTCXX=$CLANG_CCXX HOSTAR=$CLANG_AR HOSTLD=$CLANG_LD O=out_cfi -j24
+make LLVM=1 CC=$CLANG_CC LD=$CLANG_LD AR=$CLANG_AR STRIP=$CLANG_STRIP OBJCOPY=$CLANG_OC NM=$CLANG_NM OBJDUMP=$CLANG_OD OBJSIZE=$CLANG_OS READELF=$CLANG_RE HOSTCC=$CLANG_CC HOSTCXX=$CLANG_CCXX HOSTAR=$CLANG_AR HOSTLD=$CLANG_LD O=out_cfi -j32
 #make O=out_cfi -j24
